@@ -341,9 +341,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 };
 
                 if (this._existPlayer(newPlayer.name) !== true) {
-                    database
-                        .ref('players/' + uid)
+                    database.ref('players/' + uid)
                         .set(newPlayer);
+                    for(const titleDeed in newPlayer.title_deeds){
+                        if(newPlayer.title_deeds[titleDeed] === true) {
+                            const titleDeed = database.ref('title_deeds/' + titleDeed);
+                            titleDeed.once('value', (snapshot) => {
+                                const titleDeedObject = snapshot.val();
+                                this.push('deeds', titleDeedObject);
+                            });
+                        }
+                    }
                     this.set('player', newPlayer);
                 }
             }
