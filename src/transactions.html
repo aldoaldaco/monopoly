@@ -44,7 +44,9 @@
             <div class="operation">
                 <paper-dropdown-menu label="Title Deeds" no-animations="true" on-value-changed="">
                     <paper-listbox slot="dropdown-content">
-                        <paper-item class="item">Option</paper-item>
+                        <template is="dom-repeat" items="[[deeds]]" as="deed">
+                            <paper-item class="item">[[deed.name]]</paper-item>
+                        </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
                 <paper-dropdown-menu label="Players" no-animations="true" on-value-changed="">
@@ -90,6 +92,10 @@
                     player: {
                         type: Object,
                         value: {}
+                    },
+                    deeds: {
+                        type: Array,
+                        value: []
                     }
                 };
             }

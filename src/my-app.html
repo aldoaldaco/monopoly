@@ -208,7 +208,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             role="main">
                         <my-view1 name="dashboard" deeds="[[deeds]]" player="[[player]]" transactions="[[transactions]]"
                                   players="[[players]]"></my-view1>
-                        <my-view2 name="transactions" players="[[players]]" player="[[player]]"></my-view2>
+                        <my-view2 name="transactions" players="[[players]]" player="[[player]]"
+                                  deeds="[[deeds]]"></my-view2>
                         <my-view404 name="view404"></my-view404>
                     </iron-pages>
                 </app-header-layout>
@@ -280,6 +281,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.init();
             }
 
+            startGame() {
+                const uid = database.ref().child('players').push().key;
+                const newPlayer = {
+                    uid,
+                    name: 'Bank',
+                    balance: 100000,
+                    transactions: {},
+                    title_deeds: {
+                        "-LDJ23lSlGbdMKnztCYV": true,
+                        "-LDJ23lVVwdeLjVhMX8O": true,
+                        "-LDJ23lVVwdeLjVhMX8P": true,
+                        "-LDJ23lVVwdeLjVhMX8Q": true,
+                        "-LDJ23lVVwdeLjVhMX8R": true,
+                        "-LDJ23lVVwdeLjVhMX8S": true,
+                        "-LDJ23lXysGh-apFxemQ": true,
+                        "-LDJ23lXysGh-apFxemR": true,
+                        "-LDJ23lXysGh-apFxemS": true,
+                        "-LDJ23lXysGh-apFxemT": true,
+                        "-LDJ23lXysGh-apFxemU": true,
+                        "-LDJ23lXysGh-apFxemV": true,
+                        "-LDJ23lXysGh-apFxemW": true,
+                        "-LDJ23lXysGh-apFxemX": true,
+                        "-LDJ23lXysGh-apFxemY": true,
+                        "-LDJ23lYcnMaYwxJkHiN": true,
+                        "-LDJ23lYcnMaYwxJkHiO": true,
+                        "-LDJ23lYcnMaYwxJkHiP": true,
+                        "-LDJ23lYcnMaYwxJkHiQ": true,
+                        "-LDJ23lYcnMaYwxJkHiR": true,
+                        "-LDJ23lYcnMaYwxJkHiS": true,
+                        "-LDJ23lYcnMaYwxJkHiT": true,
+                        "-LDJ23lYcnMaYwxJkHiU": true,
+                        "-LDJ23lZgH9wG-Z-pd9Q": true,
+                        "-LDJ23lZgH9wG-Z-pd9R": true,
+                        "-LDJ23lZgH9wG-Z-pd9S": true,
+                        "-LDJ23lZgH9wG-Z-pd9T": true,
+                        "-LDJ23lZgH9wG-Z-pd9U": true,
+                        "-LDJ23lZgH9wG-Z-pd9V": true,
+                        "-LDJ23lZgH9wG-Z-pd9W": true
+                    },
+                    photo: 'http://fenesi.com/wp-content/uploads/2012/10/bank-building-icon.jpg'
+                };
+                database.ref('players/' + uid)
+                    .set(newPlayer);
+            }
+
             init() {
                 const players = database.ref('players/');
                 players.on('value', (snapshot) => {
@@ -343,16 +389,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (this._existPlayer(newPlayer.name) !== true) {
                     database.ref('players/' + uid)
                         .set(newPlayer);
-                    for(const titleDeed in newPlayer.title_deeds){
-                        if(newPlayer.title_deeds[titleDeed] === true) {
-                            const titleDeed = database.ref('title_deeds/' + titleDeed);
-                            titleDeed.once('value', (snapshot) => {
-                                const titleDeedObject = snapshot.val();
-                                this.push('deeds', titleDeedObject);
-                            });
-                        }
-                    }
                     this.set('player', newPlayer);
+                }
+
+                for (const titleDeed in this.player.title_deeds) {
+                    if (this.player.title_deeds[titleDeed] === true) {
+                        const titleDeedDB = database.ref('title_deeds/' + titleDeed);
+                        titleDeedDB.once('value', (snapshot) => {
+                            const titleDeedObject = snapshot.val();
+                            this.push('deeds', titleDeedObject);
+                        });
+                    }
                 }
             }
 
@@ -367,6 +414,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('player', {
                     transactions: []
                 });
+                this.set('deeds', []);
                 this.set('routeData', 'dashboard');
                 this.init();
             }
