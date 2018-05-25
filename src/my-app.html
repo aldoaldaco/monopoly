@@ -207,8 +207,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             fallback-selection="view404"
                             role="main">
                         <my-view2 name="transactions" players="[[players]]" player="[[player]]"
-                                  deeds="[[deeds]]"></my-view2>
-                        <my-view1 name="dashboard" deeds="[[deeds]]" player="[[player]]" transactions="[[transactions]]" players="[[players]]" deed=[[deed]] page="[[routeData.page]]"></my-view1>
+                                  deeds="[[deeds]]" on-new-transaction="createTransaction"></my-view2>
+                        <my-view1 name="dashboard" deeds="[[deeds]]" player="[[player]]" transactions="[[transactions]]"
+                                  players="[[players]]" deed=[[deed]] page="[[routeData.page]]"></my-view1>
                         <my-view404 name="view404"></my-view404>
                     </iron-pages>
                 </app-header-layout>
@@ -265,9 +266,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Array,
                         value: []
                     },
-                    deed:{
-                        type:Array,
-                        value:[]
+                    deed: {
+                        type: Array,
+                        value: []
                     }
                 };
             }
@@ -338,11 +339,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const transactions = database.ref('transactions/');
                 transactions.on('value', (snapshot) => {
                     const transactions = snapshot.val();
-                    this.set('transactions', transactions);
+                    let transactionsArray = [];
+                    for (const index in transactions) {
+                        transactionsArray.push(transactions[index]);
+                    }
+                    this.set('transactions', transactionsArray);
                 });
 
                 const deed = database.ref('title_deeds/');
-                    deed.on('value', (snapshot) => {
+                deed.on('value', (snapshot) => {
                     const deed = snapshot.val();
                     this.set('deed', deed);
                 });
@@ -407,7 +412,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         const titleDeedDB = database.ref('title_deeds/' + titleDeed);
                         titleDeedDB.once('value', (snapshot) => {
                             const titleDeedObject = snapshot.val();
-                            this.push('deeds', titleDeedObject);
+                            this.push('deeds', Object.assign({uid: titleDeed}, titleDeedObject));
                         });
                     }
                 }
@@ -427,6 +432,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('deeds', []);
                 this.set('routeData', 'dashboard');
                 this.init();
+            }
+
+            createTransaction(event) {
+                const uid = database.ref().child('transactions').push().key;
+                database.ref('transactions/' + uid)
+                    .set({
+                        date: new Date().toLocaleDateString(),
+                        from: this.player.uid,
+                        to: event.detail.to,
+                        type: event.detail.type,
+                        value: event.detail.value
+                    });
             }
 
             _routePageChanged(page) {

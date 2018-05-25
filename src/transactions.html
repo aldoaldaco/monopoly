@@ -42,25 +42,25 @@
         <div class="card">
             <h2>Title deeds</h2>
             <div class="operation">
-                <paper-dropdown-menu label="Title Deeds" no-animations="true" on-value-changed="">
+                <paper-dropdown-menu label="Title Deeds" no-animations="true" on-value-changed="deedChange">
                     <paper-listbox slot="dropdown-content">
                         <template is="dom-repeat" items="[[deeds]]" as="deed">
                             <paper-item class="item">[[deed.name]]</paper-item>
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
-                <paper-dropdown-menu label="Players" no-animations="true" on-value-changed="">
+                <paper-dropdown-menu label="Players" no-animations="true" on-value-changed="userChange">
                     <paper-listbox slot="dropdown-content">
                         <template is="dom-repeat" items="[[playersArray]]" as="player">
                             <paper-item class="item">[[player.name]]</paper-item>
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
-                <paper-button class="indigo">Make transaction</paper-button>
+                <paper-button class="indigo" on-click="transferDeed">Make transaction</paper-button>
             </div>
             <h2>Accounts transfer</h2>
             <div class="operation">
-                <paper-input label="Amount to transfer"></paper-input>
+                <paper-input label="Amount to transfer" value="{{moneySelected}}"></paper-input>
                 <paper-dropdown-menu label="Players" no-animations="true" on-value-changed="">
                     <paper-listbox slot="dropdown-content">
                         <template is="dom-repeat" items="[[playersArray]]" as="player">
@@ -68,7 +68,7 @@
                         </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
-                <paper-button class="indigo">Make transaction</paper-button>
+                <paper-button class="indigo" on-click="transferMoney">Make transaction</paper-button>
             </div>
         </div>
     </template>
@@ -96,8 +96,60 @@
                     deeds: {
                         type: Array,
                         value: []
+                    },
+                    userSelected: {
+                        type: String,
+                        value: ''
+                    },
+                    deedSelected: {
+                        type: String,
+                        value: ''
+                    },
+                    moneySelected: {
+                        type: Number,
+                        value: 100
                     }
                 };
+            }
+
+            deedChange(event) {
+                for (const deed of this.deeds) {
+                    if (deed.name === event.detail.value) {
+                        this.set('deedSelected', deed.uid);
+                    }
+                }
+            }
+
+            userChange(event) {
+                for (const player of this.playersArray) {
+                    if (player.name === event.detail.value) {
+                        this.set('userSelected', player.uid);
+                    }
+                }
+            }
+
+            transferMoney() {
+                this.dispatchEvent(new CustomEvent('new-transaction', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        to: this.userSelected,
+                        type: 'money',
+                        value: this.moneySelected
+                    }
+                }));
+            }
+
+            transferDeed() {
+                this.dispatchEvent(new CustomEvent('new-transaction', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        to: this.userSelected,
+                        type: 'title_deed',
+                        value: this.deedSelected
+                    }
+                }));
             }
 
             _formatPlayers() {
