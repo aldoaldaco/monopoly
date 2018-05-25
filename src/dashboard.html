@@ -133,6 +133,10 @@
                         type: Object,
                         value: {},
                         observer: '_handlerTable'
+                    },
+                    deed:{
+                        type:Object,
+                        value:{}
                     }
                 };
             }
@@ -160,6 +164,45 @@
                 return playerName;
             }
 
+            getType(typeTransaction){
+                switch(typeTransaction) {
+                    case 'money':
+                            for (const transaction of this.transactions){
+                                if(transaction.from === this.player.uid){
+                                    return 'Envio de dinero'; 
+                                }
+                                if(transaction.to === this.player.uid){
+                                    return 'Recibo de dinero';
+                                }
+                            }
+                        break;
+                    case 'title_deed':
+                            for(const transaction of this.transactions){
+                                if(transaction.from === this.player.uid){
+                                    return 'Traspaso de propiedad'; 
+                                }
+                                if(transaction.to === this.player.uid){
+                                    return 'Recibo de propiedad';
+                                }
+                            }
+                        break;
+                }
+            }
+
+            getNameDeed(typeTransaction,uidDeed){
+                if(typeTransaction !== 'money'){
+                    let nameDeed = '';
+                    const deed = this.deed;
+                    for (const names in deed) {
+                        if (uidDeed === names.uid) {
+                            nameDeed = deed.name;
+                        }
+                    }
+                    return nameDeed;
+                }
+                return uidDeed;
+            }
+
             _handlerTable() {
                 const headers = ['Type', 'User', 'Value', 'Date'];
                 const rows = [];
@@ -169,7 +212,12 @@
                 for (const transaction of this.transactions) {
                     const row = {
                         title: transaction.date,
-                        cells: [transaction.type, this.getUserName(transaction.from), transaction.value, transaction.date]
+                        cells: [    
+                                this.getType(transaction.type), 
+                                this.getUserName(transaction.from), 
+                                transaction.value, 
+                                transaction.date
+                            ]
                     };
                     rows.push(row);
                 }
