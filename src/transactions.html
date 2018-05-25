@@ -49,8 +49,9 @@
                 </paper-dropdown-menu>
                 <paper-dropdown-menu label="Players" no-animations="true" on-value-changed="">
                     <paper-listbox slot="dropdown-content">
-                        <paper-item class="item">Team1</paper-item>
-                        <paper-item class="item">Team2</paper-item>
+                        <template is="dom-repeat" items="[[playersArray]]" as="player">
+                            <paper-item class="item">[[player.name]]</paper-item>
+                        </template>
                     </paper-listbox>
                 </paper-dropdown-menu>
                 <paper-button class="indigo">Make transaction</paper-button>
@@ -73,6 +74,36 @@
         class MyView2 extends Polymer.Element {
             static get is() {
                 return 'my-view2';
+            }
+
+            static get properties() {
+                return {
+                    players: {
+                        type: Array,
+                        value: [],
+                        observer: '_formatPlayers'
+                    },
+                    playersArray: {
+                        type: Array,
+                        value: []
+                    },
+                    player: {
+                        type: Object,
+                        value: {}
+                    }
+                };
+            }
+
+            _formatPlayers() {
+                const playersArray = [];
+                const players = this.players[0];
+                for (const playerId in  players) {
+                    const player = players[playerId];
+                    if (player.uid !== this.player.uid) {
+                        playersArray.push(player);
+                    }
+                }
+                this.set('playersArray', playersArray);
             }
         }
 
