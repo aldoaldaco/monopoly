@@ -134,9 +134,13 @@
                         value: {},
                         observer: '_handlerTable'
                     },
-                    deed:{
-                        type:Object,
-                        value:{}
+                    deed: {
+                        type: Object,
+                        value: {}
+                    },
+                    page: {
+                        type: String,
+                        observer: '_handlerTable'
                     }
                 };
             }
@@ -153,8 +157,17 @@
                 this.$.titlesButton.setAttribute('aria-expanded', this.$.deeds.opened);
             }
 
-            getUserName(uid) {
+            getUserName(transaction) {
                 let playerName = '';
+                let uid = '';
+
+                if (transaction.from === this.player.uid) {
+                    uid = transaction.to;
+                }
+                if (transaction.to === this.player.uid) {
+                    uid = transaction.from;
+                }
+
                 const players = this.players[0];
                 for (const uidPlayer in players) {
                     if (uid === uidPlayer) {
@@ -164,43 +177,36 @@
                 return playerName;
             }
 
-            getType(typeTransaction){
-                switch(typeTransaction) {
+            getType(transaction) {
+                switch (transaction.type) {
                     case 'money':
-                            for (const transaction of this.transactions){
-                                if(transaction.from === this.player.uid){
-                                    return 'Envio de dinero'; 
-                                }
-                                if(transaction.to === this.player.uid){
-                                    return 'Recibo de dinero';
-                                }
-                            }
+                        if (transaction.from === this.player.uid) {
+                            return 'Envio de dinero';
+                        }
+                        if (transaction.to === this.player.uid) {
+                            return 'Recibo de dinero';
+                        }
                         break;
                     case 'title_deed':
-                            for(const transaction of this.transactions){
-                                if(transaction.from === this.player.uid){
-                                    return 'Traspaso de propiedad'; 
-                                }
-                                if(transaction.to === this.player.uid){
-                                    return 'Recibo de propiedad';
-                                }
-                            }
+                        if (transaction.from === this.player.uid) {
+                            return 'Traspaso de propiedad';
+                        }
+                        if (transaction.to === this.player.uid) {
+                            return 'Recibo de propiedad';
+                        }
                         break;
                 }
             }
 
-            getNameDeed(typeTransaction,uidDeed){
-                if(typeTransaction !== 'money'){
-                    let nameDeed = '';
-                    const deed = this.deed;
-                    for (const names in deed) {
-                        if (uidDeed === names.uid) {
-                            nameDeed = deed.name;
-                        }
-                    }
-                    return nameDeed;
+            getNameDeed(typeTransaction, uidDeed) {
+                let nameDeed = uidDeed;
+                if (typeTransaction === 'title_deed') {
+                    const title = database.ref('title_deeds/' + uidDeed);
+                    title.once('value', (snapshot) => {
+                        nameDeed = snapshot.val().name;
+                    });
                 }
-                return uidDeed;
+                return nameDeed;
             }
 
             _handlerTable() {
@@ -212,12 +218,12 @@
                 for (const transaction of this.transactions) {
                     const row = {
                         title: transaction.date,
-                        cells: [    
-                                this.getType(transaction.type), 
-                                this.getUserName(transaction.from), 
-                                transaction.value, 
-                                transaction.date
-                            ]
+                        cells: [
+                            this.getType(transaction),
+                            this.getUserName(transaction),
+                            this.getNameDeed(transaction.type, transaction.value),
+                            transaction.date
+                        ]
                     };
                     rows.push(row);
                 }
