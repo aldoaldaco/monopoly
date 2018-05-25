@@ -410,7 +410,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 for (const titleDeed in this.player.title_deeds) {
                     if (this.player.title_deeds[titleDeed] === true) {
                         const titleDeedDB = database.ref('title_deeds/' + titleDeed);
-                        titleDeedDB.once('value', (snapshot) => {
+                        titleDeedDB.on('value', (snapshot) => {
                             const titleDeedObject = snapshot.val();
                             this.push('deeds', Object.assign({uid: titleDeed}, titleDeedObject));
                         });

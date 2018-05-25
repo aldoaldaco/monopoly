@@ -128,7 +128,33 @@
                 }
             }
 
+            addDeed(user, deed) {
+                const updates = {};
+                updates['/players/' + user + '/title_deeds/' + deed] = true;
+                database.ref().update(updates);
+            }
+
+            removeDeed(user, deed) {
+                const updates = {};
+                updates['/players/' + user + '/title_deeds/' + deed] = false;
+                database.ref().update(updates);
+            }
+
+            getUser(uid) {
+                const players = database.ref('players/' + uid);
+                let user = {};
+                players.once('value', (snapshot) => {
+                    user = snapshot.val();
+                });
+                return user;
+            }
+
             transferMoney() {
+                const balance = this.player.balance - this.moneySelected;
+                this.updateBalance(this.player.uid, balance);
+                const userTo = this.getUser(this.userSelected);
+                const sum = Number.parseInt(userTo.balance) + Number.parseInt(this.moneySelected);
+                this.updateBalance(this.userSelected, sum);
                 this.dispatchEvent(new CustomEvent('new-transaction', {
                     bubbles: true,
                     composed: true,
@@ -141,6 +167,8 @@
             }
 
             transferDeed() {
+                this.addDeed(this.userSelected, this.deedSelected);
+                this.removeDeed(this.player.uid, this.deedSelected);
                 this.dispatchEvent(new CustomEvent('new-transaction', {
                     bubbles: true,
                     composed: true,
