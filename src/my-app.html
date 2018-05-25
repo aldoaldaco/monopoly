@@ -206,8 +206,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             attr-for-selected="name"
                             fallback-selection="view404"
                             role="main">
+<<<<<<< HEAD
                         <my-view1 name="dashboard" deeds="[[deeds]]" player="[[player]]" transactions="[[transactions]]" players="[[players]]" deed=[[deed]]></my-view1>
                         <my-view2 name="transactions" players="[[players]]"></my-view2>
+=======
+                        <my-view1 name="dashboard" deeds="[[deeds]]" player="[[player]]" transactions="[[transactions]]"
+                                  players="[[players]]"></my-view1>
+                        <my-view2 name="transactions" players="[[players]]" player="[[player]]"></my-view2>
+>>>>>>> 27f634d713810314feaec8aab74fe06b8167cf90
                         <my-view404 name="view404"></my-view404>
                     </iron-pages>
                 </app-header-layout>
@@ -261,7 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Array,
                         value: []
                     },
-                    transactions:{
+                    transactions: {
                         type: Array,
                         value: []
                     },
@@ -280,7 +286,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             connectedCallback() {
                 super.connectedCallback();
-               
+
+                this.init();
+
                 const players = database.ref('players/');
                 players.on('value', (snapshot) => {
                     this.push('players', snapshot.val());
@@ -348,9 +356,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 };
 
                 if (this._existPlayer(newPlayer.name) !== true) {
-                    database
-                        .ref('players/' + uid)
+                    database.ref('players/' + uid)
                         .set(newPlayer);
+                    for(const titleDeed in newPlayer.title_deeds){
+                        if(newPlayer.title_deeds[titleDeed] === true) {
+                            const titleDeed = database.ref('title_deeds/' + titleDeed);
+                            titleDeed.once('value', (snapshot) => {
+                                const titleDeedObject = snapshot.val();
+                                this.push('deeds', titleDeedObject);
+                            });
+                        }
+                    }
                     this.set('player', newPlayer);
                 }
             }
@@ -366,6 +382,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.set('player', {
                     transactions: []
                 });
+                this.set('routeData', 'dashboard');
+                this.init();
             }
 
             _routePageChanged(page) {
